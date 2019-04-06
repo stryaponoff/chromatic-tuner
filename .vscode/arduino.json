@@ -1,6 +1,5 @@
 {
-    "programmer": "AVRISP mkII",
-    "board": "arduino:avr:mini",
-    "configuration": "cpu=atmega168",
+    "programmer": "AVR ISP",
+    "board": "arduino:avr:uno",
     "port": "COM4"
 }
