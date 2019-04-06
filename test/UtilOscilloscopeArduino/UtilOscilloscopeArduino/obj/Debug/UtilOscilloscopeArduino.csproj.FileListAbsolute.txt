@@ -1,9 +1,0 @@
-C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\UtilOscilloscopeArduino\UtilOscilloscopeArduino\bin\Debug\UtilOscilloscopeArduino.exe
-C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\UtilOscilloscopeArduino\UtilOscilloscopeArduino\bin\Debug\UtilOscilloscopeArduino.pdb
-C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\UtilOscilloscopeArduino\UtilOscilloscopeArduino\obj\Debug\UtilOscilloscopeArduino.csprojAssemblyReference.cache
-C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\UtilOscilloscopeArduino\UtilOscilloscopeArduino\obj\Debug\UtilOscilloscopeArduino.Form1.resources
-C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\UtilOscilloscopeArduino\UtilOscilloscopeArduino\obj\Debug\UtilOscilloscopeArduino.Properties.Resources.resources
-C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\UtilOscilloscopeArduino\UtilOscilloscopeArduino\obj\Debug\UtilOscilloscopeArduino.csproj.GenerateResource.cache
-C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\UtilOscilloscopeArduino\UtilOscilloscopeArduino\obj\Debug\UtilOscilloscopeArduino.csproj.CoreCompileInputs.cache
-C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\UtilOscilloscopeArduino\UtilOscilloscopeArduino\obj\Debug\UtilOscilloscopeArduino.exe
-C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\UtilOscilloscopeArduino\UtilOscilloscopeArduino\obj\Debug\UtilOscilloscopeArduino.pdb
