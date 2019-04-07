@@ -99,7 +99,6 @@ void setup() {
 }
 
 ISR(ADC_vect) { // when new ADC value ready
-  PORTB &= B11101111; // set pin 12 low
   prevData = newData; // store previous value
   newData = ADCH; // get value from A0
 
@@ -112,7 +111,6 @@ ISR(ADC_vect) { // when new ADC value ready
       time = 0;
 
       if (index == 0) { // new max slope just reset
-        PORTB |= B00010000; // set pin 12 high
         noMatch = 0;
         index++; // increment index
       } else if (
