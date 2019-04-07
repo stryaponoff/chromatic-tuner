@@ -31,8 +31,8 @@ byte checkMaxAmp;
 byte ampThreshold = 30; // raise if you have a very noisy signal
 
 // Note being played and reference frequency for it
-volatile unsigned int currentNote[2];
-volatile float currentReference;
+volatile unsigned int currentNote[2] = {0, 0};
+volatile float currentReference = 0;
 
 const float frequencyChart[] = {
     16.35, // C0
@@ -76,6 +76,7 @@ void getNote(float frequency) {
             if (i == 0 && j == 0 && noteIndex > 0) {
                 remainderMin = remainder;
                 noteIndex = i;
+                octaveIndex = j;
                 currentReference = freqReference;
             } else if (remainderMin < remainder) {
                 remainderMin = remainder;
@@ -200,8 +201,8 @@ void loop() {
     freqAverage = frequencySum / MEASURE_COUNT;
     cents = round(getFreqOffset(freqAverage, currentReference));
 
+    getNote(freqAverage);
     if (freqAverage > 0 && abs(cents) <= 100) {
-        getNote(freqAverage);
         display(freqAverage, cents);
     }
 }
