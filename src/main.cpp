@@ -1,6 +1,6 @@
 #include "Arduino.h"
 
-#define INTERRUPT_FREQUENCY 38462
+#define SAMPLE_RATE 38462
 
 byte newData = 0;
 byte prevData = 0;
@@ -164,7 +164,7 @@ ISR(ADC_vect) { // when new ADC value ready
 
 void loop() {
   if (checkMaxAmp > ampThreshold) {
-    frequency = INTERRUPT_FREQUENCY / float(period); // calculate frequency timer rate/period
+    frequency = SAMPLE_RATE / float(period); // calculate frequency timer rate/period
   }
 
   if (period > 0 && frequency > 0) {
