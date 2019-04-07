@@ -1,6 +1,7 @@
 #include "Arduino.h"
 
 #define SAMPLE_RATE 38462
+#define MEASURE_COUNT 20 // count of frequency measures used to compute average freqency value
 
 byte newData = 0;
 byte prevData = 0;
@@ -161,15 +162,21 @@ ISR(ADC_vect) {                       // when new ADC value ready
 }
 
 void loop() {
-    for (int i = 0; i < 10; i++) {
-        if (checkMaxAmp > ampThreshold) {
-            frequency = SAMPLE_RATE / float(period); // calculate frequency timer rate/period
+    float frequencyAverage = 0;
+    float frequencySum = 1;
+    if (period > 0) {
+        for (int i = 0; i < MEASURE_COUNT; i++) {
+            if (checkMaxAmp > ampThreshold) {
+                frequencySum += SAMPLE_RATE / float(period); // calculate frequency timer rate/period
+            }
+            delay(int(500 / MEASURE_COUNT));
         }
     }
+    frequencyAverage = frequencySum / MEASURE_COUNT;
 
-    if (period > 0 && frequency > 0) {
-        Serial.println(frequency);
-        Serial.println(getNote(frequency));
+    if (frequencyAverage > 20) {
+        Serial.println(String(frequencyAverage, 4));
+        Serial.println(getNote(frequencyAverage));
     }
-    delay(100);
+        // delay(100);
 }
