@@ -160,8 +160,7 @@ ISR(ADC_vect) {                       // when new ADC value ready
     }
 }
 
-void loop()
-{
+void loop() {
     for (int i = 0; i < 10; i++) {
         if (checkMaxAmp > ampThreshold) {
             frequency = SAMPLE_RATE / float(period); // calculate frequency timer rate/period
