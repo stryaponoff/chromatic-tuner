@@ -3,6 +3,9 @@
 #define SAMPLE_RATE 38462
 #define MEASURE_COUNT 20 // count of frequency measures used to compute average freqency value
 #define INPUT_THRESHOLD 10 // threshold of analog input
+#define DISPLAY_DELAY 3000 // a number of milliseconds of displaying last note
+#define IDLE_DELAY 1000 // delay between measures when controller in idle mode
+#define WAKE_DELAY 300  // and when it hears something
 
 byte newData = 0;
 byte prevData = 0;
@@ -190,13 +193,14 @@ void loop() {
     float freqAverage = 0;
     float frequencySum = 1;
     int cents;
+    bool isSoundPresent = abs(ADCH - 128) > INPUT_THRESHOLD;
 
     if (period > 0) {
         for (int i = 0; i < MEASURE_COUNT; i++) {
             if (checkMaxAmp > ampThreshold) {
                 frequencySum += SAMPLE_RATE / float(period); // calculate frequency timer rate/period
             }
-            delay(int(300 / MEASURE_COUNT));
+            delay(int((isSoundPresent ? WAKE_DELAY : IDLE_DELAY) / MEASURE_COUNT));
         }
     }
     freqAverage = frequencySum / MEASURE_COUNT;
@@ -205,7 +209,7 @@ void loop() {
     getNote(freqAverage);
 
     // There's a signal on input and frequency is above 10 Hz
-    if (abs(ADCH - 128) > INPUT_THRESHOLD && freqAverage > 10) {
+    if (freqAverage > 10) {
         display(freqAverage, cents);
     }
 }
