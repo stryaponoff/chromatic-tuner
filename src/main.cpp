@@ -100,6 +100,11 @@ float getFreqOffset(float measured, float reference) {
     return 1200 * log(measured / reference) / log(2);
 }
 
+void display(float freqAverage, int cents) {
+    Serial.println(String(freqAverage, 4));
+    Serial.println(String("Note: " + getNoteName(currentNote) + ". Offset from reference is: " + cents + " cents."));
+}
+
 void setup() {
     Serial.begin(9600);
 
@@ -199,7 +204,6 @@ void loop() {
 
     if (freqAverage > 0 && abs(cents) <= 100) {
         getNote(freqAverage);
-        Serial.println(String(freqAverage, 4));
-        Serial.println(String("Note: " + getNoteName(currentNote) + ". Offset from reference is: " + cents + " cents."));
+        display(freqAverage, cents);
     }
 }
