@@ -68,7 +68,7 @@ void getNote(float frequency) {
     unsigned int noteIndex;
     unsigned int octaveIndex;
 
-    for (int j = 0; j < 10; j++) { // chromatic sequence
+    for (int j = 0; j < 10; j++) {     // chromatic sequence
         for (int i = 0; i < 12; i++) { // notes in octave
             freqReference = frequencyChart[i] * pow(2, j);
             remainder = fmod(frequency, freqReference);
@@ -117,11 +117,11 @@ void setup() {
     sei();                                 // enable interrupts
 }
 
-ISR(ADC_vect) {                       // when new ADC value ready
+ISR(ADC_vect) { // when new ADC value ready
     prevData = newData; // store previous value
-    newData = ADCH;     // get value from A0
+    newData = ADCH; // get value from A0
 
-    if (prevData < 127 && newData >= 127) {                                  // if increasing and crossing midpoint
+    if (prevData < 127 && newData >= 127) { // if increasing and crossing midpoint
         newSlope = newData - prevData; // calculate slope
         if (abs(newSlope - maxSlope) < slopeTolerance) { // if slopes are equal
             // record new data and reset time
@@ -160,7 +160,7 @@ ISR(ADC_vect) {                       // when new ADC value ready
             time = 0; // reset clock
             noMatch = 0;
             index = 0; // reset index
-        } else {              // slope not steep enough
+        } else { // slope not steep enough
             noMatch++; // increment no match counter
             if (noMatch > 9) {
                 reset();
@@ -203,5 +203,4 @@ void loop() {
         Serial.println(String("note: " + getNoteName(note)));
         Serial.println(String("avg: " + String(freqAverage) + "; ref: " + String(currentReference) + "offset: " + getFreqOffset(freqAverage, currentReference)));
     }
-        // delay(100);
 }
