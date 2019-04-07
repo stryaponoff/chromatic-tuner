@@ -77,13 +77,11 @@ void getNote(float frequency) {
                 remainderMin = remainder;
                 noteIndex = i;
                 currentReference = freqReference;
-            } else {
-                if (remainderMin < remainder) {
-                    remainderMin = remainder;
-                    noteIndex = i;
-                    octaveIndex = j;
-                    currentReference = freqReference;
-                }
+            } else if (remainderMin < remainder) {
+                remainderMin = remainder;
+                noteIndex = i;
+                octaveIndex = j;
+                currentReference = freqReference;
             }
         }
     }
