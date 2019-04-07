@@ -2,6 +2,7 @@
 
 #define SAMPLE_RATE 38462
 #define MEASURE_COUNT 20 // count of frequency measures used to compute average freqency value
+#define INPUT_THRESHOLD 10 // threshold of analog input
 
 byte newData = 0;
 byte prevData = 0;
@@ -195,14 +196,16 @@ void loop() {
             if (checkMaxAmp > ampThreshold) {
                 frequencySum += SAMPLE_RATE / float(period); // calculate frequency timer rate/period
             }
-            delay(int(500 / MEASURE_COUNT));
+            delay(int(300 / MEASURE_COUNT));
         }
     }
     freqAverage = frequencySum / MEASURE_COUNT;
     cents = round(getFreqOffset(freqAverage, currentReference));
 
     getNote(freqAverage);
-    if (freqAverage > 0 && abs(cents) <= 100) {
+
+    // There's a signal on input and frequency is above 10 Hz
+    if (abs(ADCH - 128) > INPUT_THRESHOLD && freqAverage > 10) {
         display(freqAverage, cents);
     }
 }
