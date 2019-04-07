@@ -1,0 +1,7 @@
+C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\TestFFT\TestFFT\bin\Debug\TestFFT.exe
+C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\TestFFT\TestFFT\bin\Debug\TestFFT.pdb
+C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\TestFFT\TestFFT\obj\Debug\TestFFT.csprojAssemblyReference.cache
+C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\TestFFT\TestFFT\obj\Debug\TestFFT.csproj.CoreCompileInputs.cache
+C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\TestFFT\TestFFT\obj\Debug\TestFFT.exe
+C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\TestFFT\TestFFT\obj\Debug\TestFFT.pdb
+C:\Users\Dement\Documents\GitHub\chromatic-tuner\test\TestFFT\TestFFT\bin\Debug\TestFFT.exe.config
