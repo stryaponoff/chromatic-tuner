@@ -31,8 +31,8 @@ byte checkMaxAmp;
 byte ampThreshold = 30; // raise if you have a very noisy signal
 
 // Note being played and reference frequency for it
-unsigned int currentNote[2];
-float currentReference;
+volatile unsigned int currentNote[2];
+volatile float currentReference;
 
 const float frequencyChart[] = {
     16.35, // C0
@@ -92,7 +92,7 @@ void getNote(float frequency) {
     currentNote[1] = octaveIndex; // current octave
 }
 
-String getNoteName(unsigned int* note) {
+String getNoteName(volatile unsigned int* note) {
      return String(noteNames[note[0]] + String(note[1]));
 }
 
@@ -184,7 +184,7 @@ ISR(ADC_vect) { // when new ADC value ready
 void loop() {
     float freqAverage = 0;
     float frequencySum = 1;
-    unsigned int *note;
+    int cents;
 
     if (period > 0) {
         for (int i = 0; i < MEASURE_COUNT; i++) {
@@ -195,12 +195,11 @@ void loop() {
         }
     }
     freqAverage = frequencySum / MEASURE_COUNT;
+    cents = round(getFreqOffset(freqAverage, currentReference));
 
-    if (freqAverage > 0) {
+    if (freqAverage > 0 && abs(cents) <= 100) {
         getNote(freqAverage);
-        note = currentNote;
         Serial.println(String(freqAverage, 4));
-        Serial.println(String("note: " + getNoteName(note)));
-        Serial.println(String("avg: " + String(freqAverage) + "; ref: " + String(currentReference) + "offset: " + getFreqOffset(freqAverage, currentReference)));
+        Serial.println(String("Note: " + getNoteName(currentNote) + ". Offset from reference is: " + cents + " cents."));
     }
 }
