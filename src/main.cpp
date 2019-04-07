@@ -30,6 +30,10 @@ byte maxAmp = 0;
 byte checkMaxAmp;
 byte ampThreshold = 30; // raise if you have a very noisy signal
 
+// Note being played and reference frequency for it
+unsigned int currentNote[2];
+float currentReference;
+
 const float frequencyChart[] = {
     16.35, // C0
     17.32, // C#0
@@ -52,32 +56,48 @@ void reset() {
     index = 0;
     noMatch = 0;
     maxSlope = 0;
+    currentNote[0] = 0;
+    currentNote[1] = 0;
+    currentReference = 0;
 }
 
-String getNote(float frequency) {
+void getNote(float frequency) {
     float remainder;
     float remainderMin;
+    float freqReference;
     unsigned int noteIndex;
     unsigned int octaveIndex;
 
     for (int j = 0; j < 10; j++) { // chromatic sequence
         for (int i = 0; i < 12; i++) { // notes in octave
-            remainder = fmod(frequency, frequencyChart[i] * pow(2, j));
+            freqReference = frequencyChart[i] * pow(2, j);
+            remainder = fmod(frequency, freqReference);
 
             if (i == 0 && j == 0 && noteIndex > 0) {
                 remainderMin = remainder;
                 noteIndex = i;
+                currentReference = freqReference;
             } else {
                 if (remainderMin < remainder) {
                     remainderMin = remainder;
                     noteIndex = i;
                     octaveIndex = j;
+                    currentReference = freqReference;
                 }
             }
         }
     }
 
-    return String(noteNames[noteIndex] + String(octaveIndex));
+    currentNote[0] = noteIndex; // current note
+    currentNote[1] = octaveIndex; // current octave
+}
+
+String getNoteName(unsigned int* note) {
+     return String(noteNames[note[0]] + String(note[1]));
+}
+
+float getFreqOffset(float measured, float reference) {
+    return 1200 * log(measured / reference) / log(2);
 }
 
 void setup() {
@@ -162,8 +182,10 @@ ISR(ADC_vect) {                       // when new ADC value ready
 }
 
 void loop() {
-    float frequencyAverage = 0;
+    float freqAverage = 0;
     float frequencySum = 1;
+    unsigned int *note;
+
     if (period > 0) {
         for (int i = 0; i < MEASURE_COUNT; i++) {
             if (checkMaxAmp > ampThreshold) {
@@ -172,11 +194,14 @@ void loop() {
             delay(int(500 / MEASURE_COUNT));
         }
     }
-    frequencyAverage = frequencySum / MEASURE_COUNT;
+    freqAverage = frequencySum / MEASURE_COUNT;
 
-    if (frequencyAverage > 20) {
-        Serial.println(String(frequencyAverage, 4));
-        Serial.println(getNote(frequencyAverage));
+    if (freqAverage > 0) {
+        getNote(freqAverage);
+        note = currentNote;
+        Serial.println(String(freqAverage, 4));
+        Serial.println(String("note: " + getNoteName(note)));
+        Serial.println(String("avg: " + String(freqAverage) + "; ref: " + String(currentReference) + "offset: " + getFreqOffset(freqAverage, currentReference)));
     }
         // delay(100);
 }
