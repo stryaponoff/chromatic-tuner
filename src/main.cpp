@@ -29,14 +29,56 @@ byte maxAmp = 0;
 byte checkMaxAmp;
 byte ampThreshold = 30; // raise if you have a very noisy signal
 
-// variables for tuning
-// int correctFrequency; // the correct frequency for the string being played
+const float frequencyChart[] = {
+    16.35, // C0
+    17.32, // C#0
+    18.35, // D0
+    19.45, // D#0
+    20.60, // E0
+    21.83, // F0
+    23.12, // F#0
+    24.50, // G0
+    25.96, // G#0
+    27.50, // A0
+    29.14, // A#0
+    30.87, // B0
+};
+
+const String noteNames[] = {
+    "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
+};
 
 // Cleaning out calculation buffer. Called if there are no matches for so long
 void reset() {
   index = 0;
   noMatch = 0;
   maxSlope = 0;
+}
+
+String getNote(float frequency) {
+    float remainder;
+    float remainderMin;
+    unsigned int noteIndex;
+    unsigned int octaveIndex;
+
+    for (int j = 0; j < 10; j++) { // chromatic sequence
+        for (int i = 0; i < 12; i++) { // notes in octave
+            remainder = fmod(frequency, frequencyChart[i] * pow(2, j));
+
+            if (i == 0 && j == 0 && noteIndex > 0) {
+                remainderMin = remainder;
+                noteIndex = i;
+            } else {
+                if (remainderMin < remainder) {
+                    remainderMin = remainder;
+                    noteIndex = i;
+                    octaveIndex = j;
+                }
+            }
+        }
+    }
+
+    return String(noteNames[noteIndex] + String(octaveIndex));
 }
 
 void setup() {
@@ -126,6 +168,10 @@ void loop() {
   if (checkMaxAmp > ampThreshold) {
     frequency = INTERRUPT_FREQUENCY / float(period); // calculate frequency timer rate/period
   }
-  Serial.println(frequency);
+
+  if (period > 0 && frequency > 0) {
+    Serial.println(frequency);
+    Serial.println(getNote(frequency));
+  }
   delay(100);
 }
