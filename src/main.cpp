@@ -1,11 +1,12 @@
 #include "Arduino.h"
+#include <PCD8544.h>
 
 #define SAMPLE_RATE 38462
-#define MEASURE_COUNT 20 // count of frequency measures used to compute average freqency value
-#define INPUT_THRESHOLD 10 // threshold of analog input
+#define MEASURE_COUNT 10 // count of frequency measures used to compute average freqency value
+#define INPUT_THRESHOLD 5 // threshold of analog input
 #define DISPLAY_DELAY 3000 // a number of milliseconds of displaying last note
 #define IDLE_DELAY 1000 // delay between measures when controller in idle mode
-#define WAKE_DELAY 300  // and when it hears something
+#define WAKE_DELAY 500  // and when it hears something
 
 byte newData = 0;
 byte prevData = 0;
@@ -35,7 +36,8 @@ byte checkMaxAmp;
 byte ampThreshold = 30; // raise if you have a very noisy signal
 
 // Note being played and reference frequency for it
-volatile unsigned int currentNote[2] = {0, 0};
+int currentNote = 0;
+int currentOctave = 0;
 volatile float currentReference = 0;
 
 const float frequencyChart[] = {
@@ -55,29 +57,34 @@ const float frequencyChart[] = {
 
 const String noteNames[] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 
+// LCD
+static const byte glyph[] = { B00010000, B00110100, B00110000, B00110100, B00010000 };
+static PCD8544 lcd;
+
 // Cleaning out calculation buffer. Called if there are no matches for so long
 void reset() {
     index = 0;
     noMatch = 0;
     maxSlope = 0;
-    currentNote[0] = 0;
-    currentNote[1] = 0;
     currentReference = 0;
 }
 
 void getNote(float frequency) {
-    float remainder;
+    float remainder = 0;
     float remainderMin;
-    float freqReference;
-    unsigned int noteIndex;
-    unsigned int octaveIndex;
+    float freqReference = 0;
+    unsigned int noteIndex = 0;
+    unsigned int octaveIndex = 0;
 
-    for (int j = 0; j < 10; j++) {     // chromatic sequence
-        for (int i = 0; i < 12; i++) { // notes in octave
+    currentNote = 0;
+    currentOctave = 0;
+
+    for (byte j = 0; j < 10; j++) {     // chromatic sequence
+        for (byte i = 0; i < 12; i++) { // notes in octave
             freqReference = frequencyChart[i] * pow(2, j);
             remainder = fmod(frequency, freqReference);
 
-            if (i == 0 && j == 0 && noteIndex > 0) {
+            if (i == 0 && j == 0) {
                 remainderMin = remainder;
                 noteIndex = i;
                 octaveIndex = j;
@@ -90,13 +97,12 @@ void getNote(float frequency) {
             }
         }
     }
-
-    currentNote[0] = noteIndex; // current note
-    currentNote[1] = octaveIndex; // current octave
+    currentNote = noteIndex; // current note
+    currentOctave = octaveIndex; // current octave
 }
 
-String getNoteName(volatile unsigned int* note) {
-     return String(noteNames[note[0]] + String(note[1]));
+String getNoteName(int note, int octave) {
+    return String(noteNames[note] + String(octave));
 }
 
 float getFreqOffset(float measured, float reference) {
@@ -104,12 +110,44 @@ float getFreqOffset(float measured, float reference) {
 }
 
 void display(float freqAverage, int cents) {
-    Serial.println(String(freqAverage, 4));
-    Serial.println(String("Note: " + getNoteName(currentNote) + ". Offset from reference is: " + cents + " cents."));
+    lcd.clear();
+    lcd.setCursor(1, 0);
+    lcd.print(String(getNoteName(currentNote, currentOctave)));
+    lcd.setCursor(1, 1);
+    lcd.print(String(cents) + " cents");
+
+    lcd.setCursor(42 , 3);
+    lcd.drawColumn(2, 32);
+    lcd.setCursor(43 , 3);
+    lcd.drawColumn(2, 32);
+
+    if (cents > 43) {
+        cents = 43;
+    } else if (cents < -43) {
+        cents = -43;
+    }
+
+    if (cents < 0) {
+        for (byte i = 43 + cents; i <= 43; i++) {
+            lcd.setCursor(i , 3);
+            lcd.drawColumn(0, 8);
+        }
+    } else {
+        for (byte i = 43; i <= cents + 43; i++) {
+            lcd.setCursor(i , 3);
+            lcd.drawColumn(0, 8);
+        }
+    }
+    lcd.setCursor(1, 3);
+    Serial.println(String("Note: " + getNoteName(currentNote, currentOctave) + ". Offset from reference is: " + cents + " cents."));
 }
 
 void setup() {
     Serial.begin(9600);
+
+    lcd.begin(84, 48);
+    lcd.setCursor(0, 0);
+    lcd.print("Init");
 
     cli(); // disable interrupts
     ADCSRA = 0;
@@ -155,7 +193,6 @@ ISR(ADC_vect) { // when new ADC value ready
                 timer[0] = timer[index];
                 slope[0] = slope[index];
                 index = 1;
-                PORTB |= B00010000; // set pin 12 high
                 noMatch = 0;
             } else { // crossing midpoint but not match
                 index++;
@@ -191,25 +228,28 @@ ISR(ADC_vect) { // when new ADC value ready
 
 void loop() {
     float freqAverage = 0;
-    float frequencySum = 1;
+    float frequencySum = 0;
     int cents;
-    bool isSoundPresent = abs(ADCH - 128) > INPUT_THRESHOLD;
 
     if (period > 0) {
-        for (int i = 0; i < MEASURE_COUNT; i++) {
+        for (byte i = 0; i < MEASURE_COUNT; i++) {
             if (checkMaxAmp > ampThreshold) {
                 frequencySum += SAMPLE_RATE / float(period); // calculate frequency timer rate/period
             }
-            delay(int((isSoundPresent ? WAKE_DELAY : IDLE_DELAY) / MEASURE_COUNT));
+            delay(WAKE_DELAY / MEASURE_COUNT);
         }
     }
     freqAverage = frequencySum / MEASURE_COUNT;
     cents = round(getFreqOffset(freqAverage, currentReference));
-
-    getNote(freqAverage);
+    Serial.println(String(freqAverage));
 
     // There's a signal on input and frequency is above 10 Hz
-    if (freqAverage > 10) {
+    if (freqAverage != INFINITY && freqAverage > 10) {
+        getNote(freqAverage);
         display(freqAverage, cents);
+    } else {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("No sound");
     }
 }
